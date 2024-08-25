@@ -1,0 +1,9 @@
+pygame
+pygame_widgets
+pygame_gui
+random
+math
+os
+asyncio
+pickle
+matplotlib
