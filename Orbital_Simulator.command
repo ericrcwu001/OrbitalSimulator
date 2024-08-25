@@ -206,7 +206,8 @@ def main():
             planets_data = pickle.load(f)  # Load planet data from file
             for planet_data in planets_data:
                 global planet_group
-                t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
+                t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0,
+                           (screen_width, screen_height), "",
                            screen, cam_group)  # Create a planet from data
                 t.load_fields(planet_data)  # Load fields from saved data
 
@@ -240,7 +241,7 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
                 draw_line = not draw_line  # Toggle line drawing
             # Reset planet group
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_MINUS:
                 planet_group, sun = reset_planet_group()  # Reset the planets
 
             # Check button collisions
@@ -388,8 +389,8 @@ def main():
                                                       allow_picking_directories=False)  # Open file dialog for import
                         imported = True  # Set import flag
                     elif event.ui_element == export_ui_button:  # Check if export button is pressed
-                        file_selection = UIFileDialog(rect=Rect(0, 0, 300, 300), manager=manager,
-                                                      allow_picking_directories=True)  # Open file dialog for export
+                        # file_selection = UIFileDialog(rect=Rect(0, 0, 300, 300), manager=manager,
+                        #                               allow_picking_directories=True)  # Open file dialog for export
                         exported = True  # Set export flag
                     elif event.ui_element == file_selection.ok_button:  # Check if OK button in file dialog is pressed
                         if imported:  # If importing
@@ -403,15 +404,15 @@ def main():
                                                screen, cam_group)  # Create a planet object
                                     t.load_fields(planet_data)  # Load the planet's fields
                             imported = False  # Reset import flag
-                        if exported:  # If exporting
-                            planets_data = []  # Initialize list for planet data
-                            for planet in planet_group.sprites():  # Loop through planets
-                                if not planet.sun:  # Skip the sun
-                                    planets_data.append(planet.save_fields())  # Save planet data
-                            print(str(file_selection.current_file_path))  # Print export path
-                            with open(str(file_selection.current_file_path) + "/planets_data.pkl", 'wb') as f:
-                                pickle.dump(planets_data, f)  # Save data to file
-                            exported = False  # Reset export flag
+                    if exported:  # If exporting
+                        print("here")
+                        planets_data = []  # Initialize list for planet data
+                        for planet in planet_group.sprites():  # Loop through planets
+                            if not planet.sun:  # Skip the sun
+                                planets_data.append(planet.save_fields())  # Save planet data
+                        with open("planets_data.pkl", 'wb') as f:
+                            pickle.dump(planets_data, f)  # Save data to file
+                        exported = False  # Reset export flag
 
             if not t:
                 temp = planet_group.check_collision(event)  # Check for collision with planets
