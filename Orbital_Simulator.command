@@ -395,22 +395,32 @@ def main():
                     elif event.ui_element == file_selection.ok_button:  # Check if OK button in file dialog is pressed
                         if imported:  # If importing
                             planet_group, sun = reset_planet_group()  # Reset planet group
+                            _, file_extension = os.path.splitext(file_selection.current_file_path)
 
-                            # Load planet data from the selected file
-                            with open(file_selection.current_file_path, 'rb') as f:
-                                planets_data = pickle.load(f)  # Load data
-                                for planet_data in planets_data:
-                                    t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
-                                               screen, cam_group)  # Create a planet object
-                                    t.load_fields(planet_data)  # Load the planet's fields
+                            if file_extension == ".pkl":
+                                with open(file_selection.current_file_path, 'rb') as f:
+                                    planets_data = pickle.load(f)  # Load data
+                                    if type(planets_data) == list and type(planets_data[0]) == dict:
+                                        for planet_data in planets_data:
+                                            t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
+                                                       screen, cam_group)  # Create a planet object
+                                            t.load_fields(planet_data)  # Load the planet's fields
+                                    else:
+                                        pass
+                                        # write import failed
+                            else:
+                                pass
+                                # write import failed
+
                             imported = False  # Reset import flag
+
                     if exported:  # If exporting
                         print("here")
                         planets_data = []  # Initialize list for planet data
                         for planet in planet_group.sprites():  # Loop through planets
                             if not planet.sun:  # Skip the sun
                                 planets_data.append(planet.save_fields())  # Save planet data
-                        with open("planets_data.pkl", 'wb') as f:
+                        with open(dir_path + "/planets_data.pkl", 'wb') as f:
                             pickle.dump(planets_data, f)  # Save data to file
                         exported = False  # Reset export flag
 
@@ -544,7 +554,7 @@ def bring_menu(type, *args):
 
         # Create labels for force vectors setting
         force_label_1 = FONT_2.render("Toggle Force", False, COLOR)
-        force_label_2 = FONT_2.render("Vectors", False, COLOR)
+        force_label_2 = FONT_2.render("Vectors (white)", False, COLOR)
         global force_labels
         force_labels = [force_label_1, force_label_2]  # Store labels in the list
         setting_heights.append(new_height)  # Add height to settings heights
@@ -556,8 +566,8 @@ def bring_menu(type, *args):
                                         new_height + SETTINGS_BUTTON_SIZE[0])
 
         # Create labels for velocity vectors setting
-        velocity_label_1 = FONT_2.render("Toggle Velocity", False, COLOR)
-        velocity_label_2 = FONT_2.render("Vectors", False, COLOR)
+        velocity_label_1 = FONT_2.render("Toggle Velocity", False, (153, 255, 153))
+        velocity_label_2 = FONT_2.render("Vectors (green)", False, (153, 255, 153))
         global velocity_labels
         velocity_labels = [velocity_label_1, velocity_label_2]  # Store labels in the list
         setting_heights.append(new_height)  # Add height to settings heights
@@ -590,13 +600,13 @@ def bring_menu(type, *args):
             import_ui_button = UIButton(relative_rect=Rect(screen_width * 4 // 5 + SETTINGS_BUTTON_SIZE[0] / 2,
                                                            new_height, im_ex_button_size[0],
                                                            im_ex_button_size[1]),
-                                        manager=manager, text='Import Scenario')  # Create import button
+                                        manager=manager, text='Import Scene')  # Create import button
 
             global export_ui_button  # Declare export button as global
             export_ui_button = UIButton(
                 relative_rect=Rect(screen_width * 4 // 5 + SETTINGS_BUTTON_SIZE[0] + temp_calc,
                                    new_height, im_ex_button_size[0], im_ex_button_size[1]),
-                manager=manager, text='Export Scenario')  # Create export button
+                manager=manager, text='Export Scene')  # Create export button
 
             settings_menu_group.sliders.append(import_ui_button)  # Add import button to settings group
             settings_menu_group.sliders.append(export_ui_button)  # Add export button to settings group

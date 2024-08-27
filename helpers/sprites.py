@@ -102,7 +102,7 @@ class Planet(pygame.sprite.Sprite):  # Class to represent a planet
                 pygame.draw.lines(window, self.color, False, updated_points, 1)
 
         # Draw force vectors if enabled
-        if self.force_vectors and (
+        if self.force_vectors and not self.sun and (
                 self.focused == self.only_when_focused or (self.focused and not self.only_when_focused)):
             force_scale = 800 / 1e24  # Scale for force arrows
             force = math.sqrt(self.total_fx ** 2 + self.total_fy ** 2) * force_scale  # Calculate force magnitude
@@ -114,10 +114,10 @@ class Planet(pygame.sprite.Sprite):  # Class to represent a planet
                        (x + force_x + cam_group.offset.x, y + force_y + cam_group.offset.y), 4)  # Draw force arrow
 
         # Draw velocity vectors if enabled
-        if self.velocity_vectors and (
+        if self.velocity_vectors and not self.sun and (
                 self.focused == self.only_when_focused or (self.focused and not self.only_when_focused)):
             velocity_scale = 50 / 29785  # Scale for velocity arrows
-            self.arrow((255, 255, 255), (255, 255, 255),
+            self.arrow((153, 255, 153), (153, 255, 153),
                        (x + cam_group.offset.x, y + cam_group.offset.y),
                        (x + self.x_vel * velocity_scale + cam_group.offset.x,
                         y + self.y_vel * velocity_scale + cam_group.offset.y), 4)  # Draw velocity arrow
