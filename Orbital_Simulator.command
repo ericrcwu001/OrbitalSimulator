@@ -21,7 +21,7 @@ from pygame.locals import KEYDOWN, K_f, K_RETURN, Rect  # For handling events an
 from helpers.cam_group import CamGroup  # For camera management
 from helpers.planet_group import PlanetGroup  # For managing planets
 from helpers.menu_group import MenuGroup  # For managing menus
-from helpers.sprites import Planet, Star, Button, LogarithmicSlider, TextBox, Slider  # For game objects and UI elements
+from helpers.sprites import PlanetaryObject, Star, Button, LogarithmicSlider, TextBox, Slider  # For game objects and UI elements
 import matplotlib  # For plotting graphs
 import matplotlib.pyplot as plt  # For creating plots
 import matplotlib.backends.backend_agg as agg  # For rendering plots to surfaces
@@ -118,7 +118,7 @@ velocity_angle_slider = Slider(screen, -500000, -500000, menu_width - menu_width
                                menu_height // 40,
                                FONT_3, min=0, max=360, min_text=["0°"], max_text=["360°"])  # Slider for velocity angle
 distance_slider = LogarithmicSlider(screen, -500000, -500000, menu_width - menu_width // 4 - menu_height // 80,
-                                    menu_height // 40, FONT_3, 2, min=Planet.AU / 2, max=Planet.AU * 2,
+                                    menu_height // 40, FONT_3, 2, min=PlanetaryObject.AU / 2, max=PlanetaryObject.AU * 2,
                                     min_text=["1/2x", "AU"], max_text=["2x", "AU"])  # Slider for distance
 
 # Create button groups for different menus
@@ -174,8 +174,8 @@ check_if_added = False  # Flag to check if buttons are added
 # Function to reset the planet group and create a sun
 def reset_planet_group():
     planet_group = PlanetGroup(screen)  # Create a new planet group
-    sun = Planet(planet_group, 0, 0, 30 * Planet.SCALE * 10 ** 9, (253, 184, 19), 1.98892 * 10 ** 30,
-                 (screen_width, screen_height), "Sun", screen, cam_group)  # Create a sun object
+    sun = PlanetaryObject(planet_group, 0, 0, 30 * PlanetaryObject.SCALE * 10 ** 9, (253, 184, 19), 1.98892 * 10 ** 30,
+                          (screen_width, screen_height), "Sun", screen, cam_group)  # Create a sun object
     sun.sun = True  # Mark the object as the sun
     return planet_group, sun  # Return the planet group and sun object
 
@@ -206,9 +206,9 @@ def main():
             planets_data = pickle.load(f)  # Load planet data from file
             for planet_data in planets_data:
                 global planet_group
-                t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0,
-                           (screen_width, screen_height), "",
-                           screen, cam_group)  # Create a planet from data
+                t = PlanetaryObject(planet_group, 0, 0, 1, (0, 0, 0), 0,
+                                    (screen_width, screen_height), "",
+                                    screen, cam_group)  # Create a planet from data
                 t.load_fields(planet_data)  # Load fields from saved data
 
     # Create a group for background stars
@@ -223,8 +223,8 @@ def main():
         screen.fill("black")  # Fill the screen with black
 
         background.update(cam_group)  # Update background stars
-        buttons_group.draw(screen)  # Draw buttons to the screen
         planet_group.update(cam_group)  # Update planets based on camera position
+        buttons_group.draw(screen)  # Draw buttons to the screen
         events = pygame.event.get()  # Get a list of events from the event queue
         for event in events:
             # Handle quitting the game
@@ -267,17 +267,17 @@ def main():
             if not t and menuShown[0]:
                 t = t or add_planet_button.check_collision()  # Check for add planet button collision
                 if t:
+                    reset_menu()  # Reset the menu
                     # Create a new planet based on user input
-                    planet = Planet(planet_group, 0, distance_slider.getValue(),
-                                    10 * Planet.SCALE * 10 ** 9,
-                                    (rand_color(), rand_color(), rand_color()), mass_slider.getValue(),
-                                    (screen_width, screen_height), name_text_box.getText(), screen, cam_group)
+                    planet = PlanetaryObject(planet_group, 0, distance_slider.getValue(),
+                                             10 * PlanetaryObject.SCALE * 10 ** 9,
+                                             (rand_color(), rand_color(), rand_color()), mass_slider.getValue(),
+                                             (screen_width, screen_height), name_text_box.getText(), screen, cam_group)
                     vel = velocity_slider.getValue()  # Get velocity from slider
                     vel_angle = velocity_angle_slider.getValue()  # Get velocity angle from slider
                     # Set planet's velocity based on input
                     planet.x_vel = vel * math.cos(vel_angle * math.pi / 180)
                     planet.y_vel = vel * math.sin(vel_angle * math.pi / 180) * -1
-                    reset_menu()  # Reset the menu
                     menuShown = (False, "")  # Hide menu
             if not t and menuShown[0] and menuShown[1] == "planet":
                 t = t or delete_planet_button.check_collision()  # Check for delete planet button collision
@@ -349,37 +349,37 @@ def main():
                 t = t or force_vectors_button.check_collision()  # Check for force vectors button collision
                 if t:
                     # Toggle force vectors display and update button image
-                    if Planet.force_vectors:
+                    if PlanetaryObject.force_vectors:
                         force_vectors_button.set_img(dir_path + "/assets/images/checkbox_empty.png",
                                                      SETTINGS_BUTTON_SIZE)
                     else:
                         force_vectors_button.set_img(dir_path + "/assets/images/checkbox_checked.png",
                                                      SETTINGS_BUTTON_SIZE)
-                    Planet.force_vectors = not Planet.force_vectors  # Toggle state
+                    PlanetaryObject.force_vectors = not PlanetaryObject.force_vectors  # Toggle state
 
             if not t and menuShown[0] and menuShown[1] == "settings":
                 t = t or velocity_vectors_button.check_collision()  # Check for velocity vectors button collision
                 if t:
                     # Toggle velocity vectors display and update button image
-                    if Planet.velocity_vectors:
+                    if PlanetaryObject.velocity_vectors:
                         velocity_vectors_button.set_img(dir_path + "/assets/images/checkbox_empty.png",
                                                         SETTINGS_BUTTON_SIZE)
                     else:
                         velocity_vectors_button.set_img(dir_path + "/assets/images/checkbox_checked.png",
                                                         SETTINGS_BUTTON_SIZE)
-                    Planet.velocity_vectors = not Planet.velocity_vectors  # Toggle state
+                    PlanetaryObject.velocity_vectors = not PlanetaryObject.velocity_vectors  # Toggle state
 
             if not t and menuShown[0] and menuShown[1] == "settings":
                 t = t or toggle_if_focused_button.check_collision()  # Check for focused toggle button collision
                 if t:
                     # Toggle focused display state and update button image
-                    if Planet.only_when_focused:
+                    if PlanetaryObject.only_when_focused:
                         toggle_if_focused_button.set_img(dir_path + "/assets/images/checkbox_empty.png",
                                                          SETTINGS_BUTTON_SIZE)
                     else:
                         toggle_if_focused_button.set_img(dir_path + "/assets/images/checkbox_checked.png",
                                                          SETTINGS_BUTTON_SIZE)
-                    Planet.only_when_focused = not Planet.only_when_focused  # Toggle state
+                    PlanetaryObject.only_when_focused = not PlanetaryObject.only_when_focused  # Toggle state
 
             if not t and menuShown[0] and menuShown[1] == "settings":
                 global imported, exported  # Declare global flags for import/export
@@ -402,8 +402,8 @@ def main():
                                     planets_data = pickle.load(f)  # Load data
                                     if type(planets_data) == list and type(planets_data[0]) == dict:
                                         for planet_data in planets_data:
-                                            t = Planet(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
-                                                       screen, cam_group)  # Create a planet object
+                                            t = PlanetaryObject(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
+                                                                screen, cam_group)  # Create a planet object
                                             t.load_fields(planet_data)  # Load the planet's fields
                                     else:
                                         pass
@@ -817,14 +817,13 @@ def add_menu_subtitles(subtitle_string, menu, y):
 
 # Function to reset the menu state
 def reset_menu():
-    add_button.change_x(a_s_x_pos)  # Reset add button position
-    settings_button.change_x(a_s_x_pos)  # Reset settings button position
     add_planet_group.hide()  # Hide the add planet menu
     view_planet_group.hide()  # Hide the view planet menu
     edit_planet_group.hide()  # Hide the edit planet menu
     settings_menu_group.hide()  # Hide the settings menu
     planet_group.unfocus()  # Unfocus all planets
-
+    add_button.change_x(a_s_x_pos)  # Reset add button position
+    settings_button.change_x(a_s_x_pos)  # Reset settings button position
 
 # Entry point of the program
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ class Star(pygame.sprite.Sprite):  # Class to control random stars in the backgr
         pygame.draw.circle(self.surface, self.color, pos, self.size)  # Draw the star as a circle
 
 
-class Planet(pygame.sprite.Sprite):  # Class to represent a planet
+class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
     AU = 149.6e9  # Astronomical unit in meters
     G = 6.67428e-11  # Gravitational constant
     TIMESTEP = 60 * 60 * 12  # Seconds in half a day
@@ -240,6 +240,20 @@ class Planet(pygame.sprite.Sprite):  # Class to represent a planet
         self.GPE = fields["GPE"]  # Load gravitational potential energy data
         self.distance = fields["distance"]  # Load distance data
 
+#
+# # Automatically generate an asteroid randomly out of screen + moving towards sun place
+# class Asteroid(PlanetaryObject, object):
+#     mass = 20e18  # Mass of the asteroid
+#     velocity = 15e4  # Initial velocity of the asteroid
+#     radius = 5 * PlanetaryObject.SCALE * 10 ** 9
+#
+#     def __init__(self, sprite_group, color, screen_size, screen, cam_group):
+#         x = random.choice([random.randint(-800, -600), random.randint(screen_size[0] + 600, screen_size[0] + 800)])
+#         y = random.choice([random.randint(-800, -600), random.randint(screen_size[1] + 600, screen_size[1] + 800)])
+#         super().__init__(sprite_group, x, y, self.radius, color, self.mass, screen_size, "", screen, cam_group)
+#         self.WIDTH = self.screen_size[0]  # Get screen width
+#
+#
 
 class Button(pygame.sprite.Sprite):  # Class to create button objects
     def __init__(self, x, y, size, filename, name, **kwargs):
@@ -335,7 +349,7 @@ class Slider(pygame_widgets.slider.Slider):  # Class to create slider objects
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
                 text_rect.center = (
-                self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
+                    self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
                 self.win.blit(text, text_rect)  # Draw max label
 
     def contains(self, x, y):  # Check if the point is within the slider
@@ -420,7 +434,7 @@ class LogarithmicSlider(pygame_widgets.slider.Slider):  # Class to create logari
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
                 text_rect.center = (
-                self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
+                    self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
                 self.win.blit(text, text_rect)  # Draw max label
 
     def contains(self, x, y):  # Check if the point is within the slider

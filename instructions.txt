@@ -1,6 +1,6 @@
 To run the program:
 
-1. You must have Python 3.11 installed
+1. Run the file "checker.sh" to check if Python 3.11.9 is installed
 
 2. Replace the first line of Orbital_Simulator.command
     Currently: "#!/Users/ericwu/Desktop/Code/Orbital_Simulator/venv/bin/python"

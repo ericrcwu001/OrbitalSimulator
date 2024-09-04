@@ -1,9 +1,11 @@
-pygame
-pygame_widgets
-pygame_gui
+asyncio
+matplotlib==3.8.4
+numpy==1.26.4
 random
 math
-os
-asyncio
 pickle
-matplotlib
+os
+pygame==2.6.0
+pygame-ce==2.5.1
+pygame_gui==0.6.12
+pygame-widgets==1.1.5
