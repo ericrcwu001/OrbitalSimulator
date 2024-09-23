@@ -1,3 +1,4 @@
+import os
 import random  # Import random for generating random values
 
 import pygame  # Import Pygame for game development
@@ -80,9 +81,22 @@ class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
         x = self.x * self.SCALE + (self.WIDTH / 2)  # Calculate scaled x position
         y = self.y * self.SCALE + (self.HEIGHT / 2)  # Calculate scaled y position
 
+        if self.focused:
+            pygame.draw.circle(window, "white", (x + cam_group.offset.x, y + cam_group.offset.y),
+                               self.radius + 2 * PlanetaryObject.SCALE * 10 ** 9)
+
         # Draw the planet
         self.planet = pygame.draw.circle(window, self.color, (x + cam_group.offset.x, y + cam_group.offset.y),
                                          self.radius)
+
+        if self.sun:
+            pygame.draw.line(window, "gray", (x + cam_group.offset.x, y + cam_group.offset.y),
+                             (x + cam_group.offset.x, y + cam_group.offset.y + self.SCALE * self.AU), 2)
+            label = pygame.font.SysFont("Trebuchet MS", int(self.WIDTH * 25 / 1920), bold=True).render("1 AU",
+                                                                                                       True,
+                                                                                                       "gray")
+            window.blit(label, (x + cam_group.offset.x - label.get_width(),
+                                y + cam_group.offset.y - label.get_height() / 2 + 100))
 
         # Draw the orbit line if there are enough points
         if len(self.orbit) > 10:
@@ -199,6 +213,7 @@ class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
 
         return False  # Indicate no dragging occurred
 
+    # CITED FROM:
     def arrow(self, line_color, tricolor, start, end, thickness=4, triangle_radius=3):  # Draw an arrow
         rad = math.pi / 180  # Convert degrees to radians
         pygame.draw.line(self.screen, line_color, start, end, thickness)  # Draw the main line of the arrow
@@ -240,20 +255,48 @@ class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
         self.GPE = fields["GPE"]  # Load gravitational potential energy data
         self.distance = fields["distance"]  # Load distance data
 
-#
-# # Automatically generate an asteroid randomly out of screen + moving towards sun place
-# class Asteroid(PlanetaryObject, object):
-#     mass = 20e18  # Mass of the asteroid
-#     velocity = 15e4  # Initial velocity of the asteroid
-#     radius = 5 * PlanetaryObject.SCALE * 10 ** 9
-#
-#     def __init__(self, sprite_group, color, screen_size, screen, cam_group):
-#         x = random.choice([random.randint(-800, -600), random.randint(screen_size[0] + 600, screen_size[0] + 800)])
-#         y = random.choice([random.randint(-800, -600), random.randint(screen_size[1] + 600, screen_size[1] + 800)])
-#         super().__init__(sprite_group, x, y, self.radius, color, self.mass, screen_size, "", screen, cam_group)
-#         self.WIDTH = self.screen_size[0]  # Get screen width
-#
-#
+
+# Automatically generate an asteroid randomly out of screen + moving towards sun place
+class Asteroid(pygame.sprite.Sprite):
+    filename = os.path.join(os.path.dirname(__file__), '..') + "/assets/images/asteroid.png"  # Get the directory of the script
+
+    def __init__(self, screen_size, screen, cam_group):
+        super().__init__()  # Initialize the sprite
+        self.screen_size = screen_size
+        self.screen = screen
+        self.cam_group = cam_group
+        self.x = random.choice([random.randint(-800, -600), random.randint(screen_size[0] + 600, screen_size[0] + 800)])
+        self.y = random.choice([random.randint(-800, -600), random.randint(screen_size[1] + 600, screen_size[1] + 800)])
+        self.vel_x = math.sqrt((self.x ** 2 / self.y ** 2 * 16 ** 2) / (1 + self.x ** 2 / self.y ** 2))
+        self.vel_y = math.sqrt((self.y ** 2 / self.x ** 2 * 16 ** 2) / (1 + self.y ** 2 / self.x ** 2))
+        self.img = pygame.transform.scale(pygame.image.load(self.filename).convert_alpha(),
+                                          (100, 85.25))  # Load and scale the image
+        if self.x < 0 and self.y < 0:
+            self.vel_x = max(self.vel_x, self.vel_x * -1)
+            self.vel_y = max(self.vel_y, self.vel_y * -1)
+            self.img = pygame.transform.rotate(self.img, 90)
+        elif self.x > 0 and self.y < 0:
+            self.vel_x = min(self.vel_x, self.vel_x * -1)
+            self.vel_y = max(self.vel_y, self.vel_y * -1)
+        elif self.x < 0 and self.y > 0:
+            self.vel_x = max(self.vel_x, self.vel_x * -1)
+            self.vel_y = min(self.vel_y, self.vel_y * -1)
+            self.img = pygame.transform.rotate(self.img, 90)
+            self.img = pygame.transform.rotate(self.img, 180)
+        elif self.x > 0 and self.y > 0:
+            self.vel_x = min(self.vel_x, self.vel_x * -1)
+            self.vel_y = min(self.vel_y, self.vel_y * -1)
+            self.img = pygame.transform.rotate(self.img, 270)
+
+        self.pos = self.img.get_rect()
+        self.pos.center = (self.x, self.y)  # Set the position of the asteroid
+        # self.screen.blit(self.img, self.pos)
+
+    def draw(self):
+        self.pos = self.pos.move(self.vel_x, self.vel_y)
+        other = self.pos.move(self.cam_group.offset.x, self.cam_group.offset.y)
+        self.screen.blit(self.img, other)
+
 
 class Button(pygame.sprite.Sprite):  # Class to create button objects
     def __init__(self, x, y, size, filename, name, **kwargs):
