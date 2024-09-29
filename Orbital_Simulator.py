@@ -19,8 +19,8 @@ from pygame.locals import KEYDOWN, K_f, K_RETURN, Rect  # For handling events an
 from helpers.cam_group import CamGroup  # For camera management
 from helpers.planet_group import PlanetGroup  # For managing planets
 from helpers.menu_group import MenuGroup  # For managing menus
-from helpers.sprites import PlanetaryObject, Star, Button, LogarithmicSlider, TextBox, Slider, \
-    Asteroid  # For game objects and UI elements
+# For game objects and UI elements
+from helpers.sprites import PlanetaryObject, Star, Button, LogarithmicSlider, TextBox, Slider
 import matplotlib  # For plotting graphs
 import matplotlib.pyplot as plt  # For creating plots
 import matplotlib.backends.backend_agg as agg  # For rendering plots to surfaces
@@ -61,7 +61,7 @@ dir_path = os.path.dirname(__file__)  # Get the directory of the script
 
 # Create buttons for play, pause, add, and settings actions with their images
 play_button = Button(
-    screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2,
+    screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2,  # first button from the left
     screen_height - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),
     (screen_width // BUTTON_SIZING, screen_width // BUTTON_SIZING),
     dir_path + "/assets/images/play.png",  # Path to play button image
@@ -70,7 +70,7 @@ play_button = Button(
 )
 
 pause_button = Button(
-    screen_width // BUTTON_SIZING // 2 * 3 + screen_height // BUTTON_SIZING // 2 * 2,
+    screen_width // BUTTON_SIZING // 2 * 3 + screen_height // BUTTON_SIZING // 2 * 2,  # second button from the left
     screen_height - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),
     (screen_width // BUTTON_SIZING, screen_width // BUTTON_SIZING),
     dir_path + "/assets/images/pause.png",  # Path to pause button image
@@ -79,7 +79,7 @@ pause_button = Button(
 )
 
 reset_button = Button(
-    screen_width // BUTTON_SIZING // 2 * 5 + screen_height // BUTTON_SIZING // 2 * 3,
+    screen_width // BUTTON_SIZING // 2 * 5 + screen_height // BUTTON_SIZING // 2 * 3,  # third button from the left
     screen_height - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),
     (screen_width // BUTTON_SIZING, screen_width // BUTTON_SIZING),
     dir_path + "/assets/images/reset.png",  # Path to pause button image
@@ -88,7 +88,7 @@ reset_button = Button(
 )
 
 add_button = Button(
-    screen_width - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),
+    screen_width - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),  # first button from the right
     screen_height - (screen_width // BUTTON_SIZING // 2 + screen_height // BUTTON_SIZING // 2),
     (screen_width // BUTTON_SIZING, screen_width // BUTTON_SIZING),
     dir_path + "/assets/images/add.png",  # Path to add button image
@@ -128,7 +128,8 @@ velocity_angle_slider = Slider(screen, -500000, -500000, menu_width - menu_width
                                menu_height // 40,
                                FONT_3, min=0, max=360, min_text=["0°"], max_text=["360°"])  # Slider for velocity angle
 distance_slider = LogarithmicSlider(screen, -500000, -500000, menu_width - menu_width // 4 - menu_height // 80,
-                                    menu_height // 40, FONT_3, 2, min=PlanetaryObject.AU / 2, max=PlanetaryObject.AU * 2,
+                                    menu_height // 40, FONT_3, 2, min=PlanetaryObject.AU / 2,
+                                    max=PlanetaryObject.AU * 2,
                                     min_text=["1/2x", "AU"], max_text=["2x", "AU"])  # Slider for distance
 
 # close_menu_button = Button(400, 400, (400, 400), dir_path + "/assets/images/add_planet.png", "edit_done",
@@ -202,15 +203,11 @@ planet_group, sun = reset_planet_group()  # Initialize planet group and sun
 imported = exported = False  # Flags for import/export status
 
 
-
 # Main function to run the simulation
 def main():
     run = True  # Flag to control the main loop
-    pause = False  # Flag to control pause state
-    show_distance = False  # Flag to show distances
     fps = True  # Flag to show FPS
     clock = pygame.time.Clock()  # Create a clock for frame rate control
-    draw_line = True  # Flag for drawing lines
     menuShown = (False, "")  # Tuple to track menu visibility and type
     ticksTime = 0  # Timer for ticks
 
@@ -230,23 +227,14 @@ def main():
     for _ in range(2000):
         Star(background)  # Add stars to the background
 
-    ast = Asteroid((screen_width, screen_height), screen, cam_group)
-
-    i = 0
     # Main game loop
     while run:
         c = clock.tick(60) / 1000  # Cap the frame rate at 60 FPS
         ticksTime += clock.get_rawtime()  # Update ticks time
         screen.fill("black")  # Fill the screen with black
 
-        if i > 240:
-            del ast
-            i = 0
-            ast = Asteroid((screen_width, screen_height), screen, cam_group)
-        i += 1
-
         background.update(cam_group)  # Update background stars
-        ast.draw()
+        # ast.draw()
         planet_group.update(cam_group)  # Update planets based on camera position
         buttons_group.draw(screen)  # Draw buttons to the screen
         events = pygame.event.get()  # Get a list of events from the event queue
@@ -255,15 +243,6 @@ def main():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and
                                              (event.key == pygame.K_x or event.key == pygame.K_ESCAPE)):
                 run = False  # Exit the main loop
-            # Toggle pause state
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:
-                pause = not pause  # Toggle pause
-            # Toggle distance display
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-                show_distance = not show_distance  # Toggle distance display
-            # Toggle line drawing
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
-                draw_line = not draw_line  # Toggle line drawing
 
             # Check button collisions; if two collisions are overlapping, then do one based on the ordering below
             t = False
@@ -284,17 +263,16 @@ def main():
             if not t:
                 t = t or add_button.check_collision()  # Check for add button collision
                 if t:
-                    reset_menu()  # Reset the menu
                     menuShown = (True, "add")  # Show add menu
+                    reset_menu()  # Reset the menu
             if not t:
                 t = t or settings_button.check_collision()  # Check for settings button collision
                 if t:
-                    reset_menu()  # Reset the menu
                     menuShown = (True, "settings")  # Show settings menu
+                    reset_menu()  # Reset the menu
             if not t and menuShown[0]:
                 t = t or add_planet_button.check_collision()  # Check for add planet button collision
                 if t:
-                    reset_menu()  # Reset the menu
                     # Create a new planet based on user input
                     planet = PlanetaryObject(planet_group, 0, distance_slider.getValue(),
                                              10 * PlanetaryObject.SCALE * 10 ** 9,
@@ -306,12 +284,13 @@ def main():
                     planet.x_vel = vel * math.cos(vel_angle * math.pi / 180)
                     planet.y_vel = vel * math.sin(vel_angle * math.pi / 180) * -1
                     menuShown = (False, "")  # Hide menu
+                    reset_menu()  # Reset the menu
             if not t and menuShown[0] and menuShown[1] == "planet":
                 t = t or delete_planet_button.check_collision()  # Check for delete planet button collision
                 if t:
                     menuShown[2].kill()  # Remove the focused planet from the menu
-                    reset_menu()  # Reset the menu
                     menuShown = (False, "")  # Hide menu
+                    reset_menu()  # Reset the menu
             if not t and menuShown[0] and menuShown[1] == "planet":
                 t = t or edit_planet_button.check_collision()  # Check for edit planet button collision
                 if t:
@@ -328,7 +307,6 @@ def main():
                         atan += 360  # Adjust angle to be within 0-360 degrees
                     velocity_angle_slider.setValue(atan)
 
-                    reset_menu()  # Reset the menu
                     menuShown = (True, "edit", focused_planet)  # Show edit menu for the focused planet
             if not t and menuShown[0] and menuShown[1] == "planet":
                 t = t or edit_planet_button.check_collision()  # Check if the edit button is clicked
@@ -347,7 +325,6 @@ def main():
                         atan += 360  # Adjust angle to be within 0-360 degrees
                     velocity_angle_slider.setValue(atan)
 
-                    reset_menu()  # Reset the menu to hide it
                     menuShown = (True, "edit", focused_planet)  # Show edit menu for the focused planet
 
             if not t and menuShown[0] and menuShown[1] == "edit":
@@ -369,8 +346,8 @@ def main():
                     # Reset properties related to energy and orbit
                     focused_planet.GPE, focused_planet.KE, focused_planet.distance, focused_planet.orbit = [], [], [], []
 
-                    reset_menu()  # Reset the menu
                     menuShown = (False, "")  # Hide the menu
+                    reset_menu()  # Reset the menu
 
             if not t and menuShown[0] and menuShown[1] == "settings":
                 t = t or force_vectors_button.check_collision()  # Check for force vectors button collision
@@ -429,15 +406,18 @@ def main():
                                     planets_data = pickle.load(f)  # Load data from serialized file
                                     if type(planets_data) == list and type(planets_data[0]) == dict:
                                         for planet_data in planets_data:
-                                            t = PlanetaryObject(planet_group, 0, 0, 1, (0, 0, 0), 0, (screen_width, screen_height), "",
-                                                                screen, cam_group)  # Create a planet object
+                                            # Create a planet object
+                                            t = PlanetaryObject(planet_group, 0, 0,
+                                                                1, (0, 0, 0), 0,
+                                                                (screen_width, screen_height),
+                                                                "", screen, cam_group)
                                             t.load_fields(planet_data)  # Load the planet's fields
                                     else:
-                                        pass
-                                        # write import failed
+                                        print("The file contains the wrong variable types.")
+
                             else:
-                                pass
-                                # write import failed
+                                print("The file is not a valid pickle file. Select one "
+                                      "with the .pkl extension")
 
                             imported = False  # Reset import flag
 
@@ -454,8 +434,8 @@ def main():
                 temp = planet_group.check_collision(event)  # Check for collision with planets
                 t = t or temp[0]  # Set flag if collision occurs
                 if t and not temp[1].name == "Sun":  # If collision with a planet that is not the sun
-                    reset_menu()  # Reset the menu
                     menuShown = (True, "planet", temp[1])  # Show planet menu for the collided planet
+                    reset_menu()  # Reset the menu
 
             if not t and not menuShown[0]:  # If no menu is shown
                 cam_group.check_collision(event)  # Check for camera collision with events
@@ -516,7 +496,8 @@ force_labels, velocity_labels, toggle_if_labels = [], [], []
 
 # Function to bring up the appropriate menu based on type
 # GUI
-def bring_menu(type, *args):
+def bring_menu(type, *args):  # create a menu Surface depending on if its an add object, settings, view planet,
+                              # or edit screen
     menu_img = pygame.image.load(dir_path + "/assets/images/menu.png").convert_alpha()  # Load menu background image
     menu_img = pygame.transform.scale(menu_img, MENU_SIZE)  # Scale menu image
     pygame.draw.rect(menu_img, COLOR, menu_img.get_rect(), 4)  # Draw a border around the menu
@@ -527,7 +508,7 @@ def bring_menu(type, *args):
 
     setting_heights = []  # List to keep track of setting heights for layout
 
-    # Menu handling for adding a planet
+    # Bring sliders, textboxes to their right positions and initialize them correctly
     if type == "add":
         new_height = int(add_menu_title("Add Planet", menu))  # Add title for adding a planet
         new_height += add_menu_subtitles("Name:", menu, new_height) + menu_height // 80  # Add subtitle for name
@@ -560,7 +541,6 @@ def bring_menu(type, *args):
         velocity_angle_slider.setX(widget_x_offset)
         velocity_angle_slider.setY(new_height)
 
-
         new_height += velocity_angle_slider.getHeight() + menu_height // 40  # Update height after angle slider
         new_height += add_menu_subtitles("Distance: " + f'{distance_slider.getValue():.1e}m', menu,
                                          new_height) + menu_height // 80  # Add distance subtitle
@@ -574,7 +554,6 @@ def bring_menu(type, *args):
         add_planet_button.set_pos(menu_width // 2 + screen_width * 4 // 5, menu_height - menu_height // 16)
 
         add_planet_group.show()  # Show the add planet group
-
     elif type == "settings":  # Menu handling for settings
         new_height = add_menu_title("Settings", menu) - menu_height // 40  # Add title for settings
 
@@ -653,7 +632,6 @@ def bring_menu(type, *args):
                               new_height + temp_calc / 2)  # Position export button
 
         settings_menu_group.show()  # Show the settings menu group
-
     elif type == "planet":  # If the menu type is for viewing a planet
         planet = args[0]  # Get the planet object from arguments
         planet.focused = True  # Mark this planet as focused
@@ -694,7 +672,6 @@ def bring_menu(type, *args):
                                      menu_height - menu_height // 16)
 
         view_planet_group.show()  # Show the group of buttons for viewing planet options
-
     elif type == "edit":  # If the menu type is for editing a planet
         planet = args[0]  # Get the planet object from arguments
         planet.focused = True  # Mark this planet as focused
@@ -736,13 +713,16 @@ def bring_menu(type, *args):
 
     screen.blit(menu, (screen_width * 4 // 5, 0))  # Draw the menu on the screen
 
+    # Instantiate text that is drawn onto the menu Surface directly. Needs to be seperated
+    # from the previous if-elif statement, despite the same conditions, because there will be
+    # a bug otherwise; the Surface must've been drawn on the main screen to draw text onto the
+    # menu surface
     if type == "add":  # If the menu type is for adding a planet
         add_menu_buttons.draw(screen)  # Draw buttons for adding a planet
         edit_button_label = FONT_2.render("Add Planet", False, COLOR)  # Create label for adding a planet
         add_button_label_size = edit_button_label.get_rect().size  # Get label size
         screen.blit(edit_button_label, (menu_width // 2 - add_button_label_size[0] // 2 + + screen_width * 4 // 5,
                                         menu_height - menu_height // 16 - add_button_label_size[1] // 2))  # Draw label
-
     elif type == "settings":  # If the menu type is for settings
         settings_menu_buttons.draw(screen)  # Draw buttons for settings
         button_size = (menu_width // 5, menu_width // 5)  # Define button size
@@ -754,7 +734,6 @@ def bring_menu(type, *args):
                                     setting_heights[1] + button_size[0])
         draw_button_labels_centered(toggle_if_labels, button_size[0] * 1.75 + screen_width * 4 // 5,
                                     setting_heights[2] + button_size[0])
-
     elif type == "planet":  # If the menu type is for a planet
         view_menu_buttons.draw(screen)  # Draw the buttons for viewing planets
         edit_button_label = FONT_2.render("Edit Planet", False, COLOR)  # Create label for editing a planet
@@ -768,7 +747,6 @@ def bring_menu(type, *args):
         screen.blit(edit_button_label, (menu_width // 2 - add_button_label_size[0] // 2 + + screen_width * 4 // 5,
                                         menu_height - menu_height // 16 - add_button_label_size[
                                             1] // 2))  # Draw the delete button label
-
     elif type == "edit":  # If the menu type is for editing a planet
         edit_done_buttons.draw(screen)  # Draw the buttons for confirming edits
         edit_button_label = FONT_2.render("Edit Done", False, COLOR)  # Create label for confirming edits
@@ -860,6 +838,7 @@ def reset_menu():
     velocity_slider.setValue(29800)
     velocity_angle_slider.setValue(180)
     distance_slider.setValue(PlanetaryObject.AU)
+
 
 # Entry point of the program
 if __name__ == '__main__':

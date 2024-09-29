@@ -3,7 +3,6 @@ pyinstaller Orbital_Simulator.py \
      --icon '/Users/ericwu/Desktop/Code/Orbital_Simulator/assets/images/app_icon.icns' \
      --add-data='./assets/:./assets/' \
      --add-data='./helpers/:./helpers/' \
-     --windowed  \
 
 to fix issues:
 xattr -dr com.apple.quarantine /Users/ericwu/Downloads/Orbital_Simulator

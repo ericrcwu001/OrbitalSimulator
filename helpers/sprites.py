@@ -213,7 +213,7 @@ class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
 
         return False  # Indicate no dragging occurred
 
-    # CITED FROM:
+    # CITED FROM: https://stackoverflow.com/questions/56295712/how-to-draw-a-dynamic-arrow-in-pygame
     def arrow(self, line_color, tricolor, start, end, thickness=4, triangle_radius=3):  # Draw an arrow
         rad = math.pi / 180  # Convert degrees to radians
         pygame.draw.line(self.screen, line_color, start, end, thickness)  # Draw the main line of the arrow
@@ -254,48 +254,6 @@ class PlanetaryObject(pygame.sprite.Sprite):  # Class to represent a planet
         self.KE = fields["KE"]  # Load kinetic energy data
         self.GPE = fields["GPE"]  # Load gravitational potential energy data
         self.distance = fields["distance"]  # Load distance data
-
-
-# Automatically generate an asteroid randomly out of screen + moving towards sun place
-class Asteroid(pygame.sprite.Sprite):
-    filename = os.path.join(os.path.dirname(__file__), '..') + "/assets/images/asteroid.png"  # Get the directory of the script
-
-    def __init__(self, screen_size, screen, cam_group):
-        super().__init__()  # Initialize the sprite
-        self.screen_size = screen_size
-        self.screen = screen
-        self.cam_group = cam_group
-        self.x = random.choice([random.randint(-800, -600), random.randint(screen_size[0] + 600, screen_size[0] + 800)])
-        self.y = random.choice([random.randint(-800, -600), random.randint(screen_size[1] + 600, screen_size[1] + 800)])
-        self.vel_x = math.sqrt((self.x ** 2 / self.y ** 2 * 16 ** 2) / (1 + self.x ** 2 / self.y ** 2))
-        self.vel_y = math.sqrt((self.y ** 2 / self.x ** 2 * 16 ** 2) / (1 + self.y ** 2 / self.x ** 2))
-        self.img = pygame.transform.scale(pygame.image.load(self.filename).convert_alpha(),
-                                          (100, 85.25))  # Load and scale the image
-        if self.x < 0 and self.y < 0:
-            self.vel_x = max(self.vel_x, self.vel_x * -1)
-            self.vel_y = max(self.vel_y, self.vel_y * -1)
-            self.img = pygame.transform.rotate(self.img, 90)
-        elif self.x > 0 and self.y < 0:
-            self.vel_x = min(self.vel_x, self.vel_x * -1)
-            self.vel_y = max(self.vel_y, self.vel_y * -1)
-        elif self.x < 0 and self.y > 0:
-            self.vel_x = max(self.vel_x, self.vel_x * -1)
-            self.vel_y = min(self.vel_y, self.vel_y * -1)
-            self.img = pygame.transform.rotate(self.img, 90)
-            self.img = pygame.transform.rotate(self.img, 180)
-        elif self.x > 0 and self.y > 0:
-            self.vel_x = min(self.vel_x, self.vel_x * -1)
-            self.vel_y = min(self.vel_y, self.vel_y * -1)
-            self.img = pygame.transform.rotate(self.img, 270)
-
-        self.pos = self.img.get_rect()
-        self.pos.center = (self.x, self.y)  # Set the position of the asteroid
-        # self.screen.blit(self.img, self.pos)
-
-    def draw(self):
-        self.pos = self.pos.move(self.vel_x, self.vel_y)
-        other = self.pos.move(self.cam_group.offset.x, self.cam_group.offset.y)
-        self.screen.blit(self.img, other)
 
 
 class Button(pygame.sprite.Sprite):  # Class to create button objects
@@ -365,26 +323,32 @@ class Slider(pygame_widgets.slider.Slider):  # Class to create slider objects
 
     def draw(self):  # Draw the slider
         if not self._hidden:  # Check if the slider is visible
+            # Draw the slider bar
             pygame.draw.rect(self.win, self.colour,
-                             (self._x, self._y, self._width, self.heightSlider))  # Draw the slider bar
+                             (self._x, self._y, self._width, self.heightSlider))
 
             if self.curved:  # If the slider has curved ends
-                pygame.draw.circle(self.win, self.colour, (self._x, self._y + self.heightSlider // 2),
+                pygame.draw.circle(self.win, self.colour,
+                                   (self._x, self._y + self.heightSlider // 2),
                                    self.radius)  # Draw left curve
-                pygame.draw.circle(self.win, self.colour, (self._x + self._width, self._y + self.heightSlider // 2),
+                pygame.draw.circle(self.win, self.colour,
+                                   (self._x + self._width, self._y + self.heightSlider // 2),
                                    self.radius)  # Draw right curve
 
             circle = (int(self._x + (self.value - self.min) / (self.max - self.min) * self._width),
                       self._y + self.heightSlider // 2)  # Calculate the position of the slider handle
 
-            gfxdraw.filled_circle(self.win, *circle, self.handleRadius, self.handleColour)  # Draw filled handle
-            gfxdraw.aacircle(self.win, *circle, self.handleRadius, self.handleColour)  # Draw outline of handle
+            gfxdraw.filled_circle(self.win, *circle, self.handleRadius,
+                                  self.handleColour)  # Draw filled handle
+            gfxdraw.aacircle(self.win, *circle, self.handleRadius,
+                             self.handleColour)  # Draw outline of handle
 
             text_height_sum = 0  # Initialize height for min text
             for text in self.min_text:  # Draw min labels
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
-                text_rect.center = (self._x, self._y + self.heightSlider + text_height_sum)  # Center text
+                text_rect.center = (self._x,
+                                    self._y + self.heightSlider + text_height_sum)  # Center text
                 self.win.blit(text, text_rect)  # Draw min label
 
             text_height_sum = 0  # Initialize height for max text
@@ -392,15 +356,18 @@ class Slider(pygame_widgets.slider.Slider):  # Class to create slider objects
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
                 text_rect.center = (
-                    self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
+                    self._x + self.getWidth(),
+                    self._y + self.heightSlider + text_height_sum)  # Center text
                 self.win.blit(text, text_rect)  # Draw max label
 
     def contains(self, x, y):  # Check if the point is within the slider
         handleX = int(
-            self._x + (self.value - self.min) / (self.max - self.min) * self._width)  # Calculate handle position
+            self._x + (self.value - self.min) /
+            (self.max - self.min) * self._width)  # Calculate handle position
         handleY = self._y + self.heightSlider // 2  # Calculate vertical position
 
-        if math.sqrt((handleX - x) ** 2 + (handleY - y) ** 2) <= self.handleRadius:  # Check distance
+        # Check distance
+        if math.sqrt((handleX - x) ** 2 + (handleY - y) ** 2) <= self.handleRadius:
             return True  # Return True if inside
 
         return False  # Return False if outside
@@ -450,40 +417,54 @@ class LogarithmicSlider(pygame_widgets.slider.Slider):  # Class to create logari
 
     def draw(self):  # Draw the logarithmic slider
         if not self._hidden:  # Check if visible
+            # Draw slider bar
             pygame.draw.rect(self.win, self.colour,
-                             (self._x, self._y, self._width, self.heightSlider))  # Draw slider bar
+                             (self._x, self._y, self._width, self.heightSlider))
 
             if self.curved:  # If the slider has curved ends
-                pygame.draw.circle(self.win, self.colour, (self._x, self._y + self.heightSlider // 2),
+                pygame.draw.circle(self.win, self.colour,
+                                   (self._x, self._y + self.heightSlider // 2),
                                    self.radius)  # Draw left curve
-                pygame.draw.circle(self.win, self.colour, (self._x + self._width, self._y + self.heightSlider // 2),
+                pygame.draw.circle(self.win, self.colour,
+                                   (self._x + self._width,
+                                    self._y + self.heightSlider // 2),
                                    self.radius)  # Draw right curve
 
-            circle = (int(self._x + self.pos_from_val(self.value)),  # Calculate handle position
+            # Calculate handle position
+            circle = (int(self._x + self.pos_from_val(self.value)),
                       self._y + self.heightSlider // 2)
 
-            gfxdraw.filled_circle(self.win, *circle, self.handleRadius, self.handleColour)  # Draw filled handle
-            gfxdraw.aacircle(self.win, *circle, self.handleRadius, self.handleColour)  # Draw outline of handle
+            gfxdraw.filled_circle(self.win, *circle,
+                                  self.handleRadius, self.handleColour)  # Draw filled handle
+            gfxdraw.aacircle(self.win, *circle,
+                             self.handleRadius, self.handleColour)  # Draw outline of handle
 
             text_height_sum = 0  # Initialize height for min text
             for text in self.min_text:  # Draw min labels
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
-                text_rect.center = (self._x, self._y + self.heightSlider + text_height_sum)  # Center text
+                # Center text
+                text_rect.center = (self._x,
+                                    self._y + self.heightSlider + text_height_sum)
                 self.win.blit(text, text_rect)  # Draw min label
 
             text_height_sum = 0  # Initialize height for max text
             for text in self.max_text:  # Draw max labels
                 text_height_sum += text.get_height()  # Accumulate height
                 text_rect = text.get_rect()
+                # Center text
                 text_rect.center = (
-                    self._x + self.getWidth(), self._y + self.heightSlider + text_height_sum)  # Center text
+                    self._x + self.getWidth(),
+                    self._y + self.heightSlider + text_height_sum)
                 self.win.blit(text, text_rect)  # Draw max label
 
-    def contains(self, x, y):  # Check if the point is within the slider
-        handleX = int(self._x + (math.log(self.value, self.exp_base) - math.log(self.min,
-                                                                                self.exp_base)) / self.scale)  # Calculate handle position
-        handleY = self._y + self.heightSlider // 2  # Calculate vertical position
+    def contains(self, x, y):  # Check if a point(x,y) is within the slider
+        # Calculate handle horizontal position
+        handleX = int(self._x +
+                      (math.log(self.value, self.exp_base) -
+                       math.log(self.min, self.exp_base)) / self.scale)
+        # Calculate handle vertical position
+        handleY = self._y + self.heightSlider // 2
 
         if math.sqrt((handleX - x) ** 2 + (handleY - y) ** 2) <= self.handleRadius:  # Check distance
             return True  # Return True if inside
